@@ -1,0 +1,5 @@
+**/*.cmp
+**/*.out
+**/*.tst
+**/*.txt
+**/*.DS_Store
