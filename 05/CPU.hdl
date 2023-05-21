@@ -40,4 +40,49 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    Mux16(
+        a=instruction[0..15],
+        b=outALU,
+        sel=instruction[15],
+        out=selectedInstraction
+    );
+    Not(in=instruction[15], out=isAInstruction);
+    Or(a=instruction[5], b=isAInstruction, out=ARagFlg);
+    ARegister(
+        in=selectedInstraction,
+        load=ARagFlg,
+        out=outA,
+        out[0..14]=addressM
+    );
+    Mux16(a=outA, b=inM, sel=instruction[12], out=outAorM);
+    And(a=instruction[15], b=instruction[4], out=isLoadD);
+    DRegister(in=outALU, load=isLoadD, out=outD);
+    ALU(
+        x=outD,
+        y=outAorM,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=outALU,
+        out=outM,
+        zr=zr,
+        ng=ng
+    );
+    Not(in=ng, out=notNg);
+    Not(in=zr, out=notZr);
+    And(a=notNg, b=notZr, out=outIsGreater);
+    And(a=instruction[0], b=outIsGreater, out=isGreater);
+    And(a=instruction[1], b=zr, out=isEq);
+    And(a=instruction[2], b=ng, out=isLess);
+    And(a=instruction[0], b=instruction[2], out=notEq);
+    And(a=notEq, b=notZr, out=isNotEq);
+    And(a=instruction[1], b=notEq, out=isUncondJMP);
+    Or8Way(in[0]=isGreater, in[1]=isLess, in[2]=isEq, in[3]=isNotEq, in[4]=isUncondJMP, in[5..7]=false, out=jumpFlg);
+    And(a=jumpFlg, b=instruction[15], out=isJump);
+    Not(in=isJump, out=isNotJump);
+    PC(in=outA, load=isJump, inc=isNotJump, reset=reset, out[0..14]=pc);
+    And(a=instruction[3], b=instruction[15], out=writeM);
 }
