@@ -1,4 +1,6 @@
 #include <string>
+#include <fstream>
+#include <vector>
 
 enum class Instruction
 {
@@ -14,7 +16,7 @@ enum class Instruction
 class Parser
 {
 public:
-    Parser(std::string asm_file);
+    Parser(std::string file_path);
     // Checks if there is more work to do.
     bool has_more_lines();
     // Gets the next instruction and makes it the current instruction.
@@ -29,4 +31,9 @@ public:
     std::string comp();
     // Returns the instruction's jump field
     std::string jump();
+
+private:
+    std::vector<std::string> lines;
+    std::string line;
+    std::string file_content;
 };

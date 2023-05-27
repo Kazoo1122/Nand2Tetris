@@ -1,3 +1,4 @@
+#include <string>
 #include "include/SymbolTable.h"
 
 SymbolTable::SymbolTable()
@@ -29,3 +30,18 @@ SymbolTable::SymbolTable()
         std::pair{"KBD", 24576},
     };
 };
+
+void SymbolTable::add_entry(std::string symbol, int address)
+{
+    SymbolTable::table[symbol] = address;
+};
+
+bool SymbolTable::contains(std::string symbol)
+{
+    return SymbolTable::table.count(symbol) > 0;
+}
+
+int SymbolTable::get_address(std::string symbol)
+{
+    return SymbolTable::table[symbol];
+}
