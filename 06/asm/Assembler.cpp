@@ -9,6 +9,11 @@ int main(int argc, char **argv)
 {
     auto asm_file = argv[1];
     Parser parser(argv[1]);
+    std::cout << parser.has_more_lines() << std::endl;
+    parser.advance();
+    parser.advance();
+    parser.advance();
+    parser.advance();
     // std::ifstream ifs(asm_file);
     // if (ifs.fail())
     // {

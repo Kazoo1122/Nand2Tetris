@@ -20,7 +20,7 @@ public:
     // Checks if there is more work to do.
     bool has_more_lines();
     // Gets the next instruction and makes it the current instruction.
-    std::string advance();
+    void advance();
     // Returns the current instruction type, as a constant
     Instruction instruction_type();
     // Returns the instruction's symbol
@@ -34,6 +34,6 @@ public:
 
 private:
     std::vector<std::string> lines;
-    std::string line;
-    std::string file_content;
+    int current_line_no;
+    std::string current_instruction;
 };
