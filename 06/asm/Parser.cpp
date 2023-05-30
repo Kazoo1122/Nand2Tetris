@@ -24,7 +24,7 @@ Parser::Parser(std::string file_path):
 
 bool Parser::has_more_lines()
 {
-    return Parser::lines.size() > Parser::current_line_no;
+    return Parser::lines.size() - 1 > Parser::current_line_no;
 };
 
 void Parser::advance()
@@ -39,7 +39,6 @@ void Parser::advance()
         {
             continue;
         }
-        std::cout << tmp << std::endl;
         Parser::current_instruction = tmp;
         break;
     }
@@ -47,13 +46,51 @@ void Parser::advance()
 
 Instruction Parser::instruction_type()
 {
-    if (std::regex_match(Parser::current_instruction, std::regex(R"(^@.*)")))
+    if (Parser::is_A_instruction(false))
     {
         return Instruction::A_INSTRUCTION;
-    } else if (std::regex_match(Parser::current_instruction, std::regex(R"(\(.?\))")))
+    } else if (Parser::is_L_instruction())
     {
         return Instruction::L_INSTRUCTION;
     } else {
         return Instruction::C_INSTRUCTION;
     }
+}
+
+std::string Parser::symbol()
+{
+    if (Parser::is_A_instruction(true))
+    {
+        return Parser::current_instruction.substr(1);
+    } else if (Parser::is_L_instruction())
+    {
+        return Parser::current_instruction.substr(1, Parser::current_instruction.length() - 2);
+    }
+    return "";
+}
+
+bool Parser::is_A_instruction(bool is_symbol_only)
+{
+    auto re = std::regex(is_symbol_only ? R"(^@\D+)" : R"(^@.*)");
+    return std::regex_search(Parser::current_instruction, re);
+}
+
+bool Parser::is_L_instruction()
+{
+    return std::regex_search(Parser::current_instruction, std::regex(R"(^\(.*\)$)"));
+}
+
+std::string Parser::dest()
+{
+
+}
+
+std::string Parser::comp()
+{
+
+}
+
+std::string Parser::jump()
+{
+
 }

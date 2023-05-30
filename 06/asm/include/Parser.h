@@ -36,4 +36,6 @@ private:
     std::vector<std::string> lines;
     int current_line_no;
     std::string current_instruction;
+    bool is_A_instruction(bool is_symbol);
+    bool is_L_instruction();
 };
