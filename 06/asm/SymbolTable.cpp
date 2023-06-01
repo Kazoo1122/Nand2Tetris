@@ -29,12 +29,12 @@ SymbolTable::SymbolTable()
         std::pair{"SCREEN", 16384},
         std::pair{"KBD", 24576},
     };
-};
+}
 
 void SymbolTable::add_entry(std::string symbol, int address)
 {
     SymbolTable::table[symbol] = address;
-};
+}
 
 bool SymbolTable::contains(std::string symbol)
 {

@@ -25,7 +25,7 @@ Parser::Parser(std::string file_path):
 bool Parser::has_more_lines()
 {
     return Parser::lines.size() - 1 > Parser::current_line_no;
-};
+}
 
 void Parser::advance()
 {
@@ -42,7 +42,7 @@ void Parser::advance()
         Parser::current_instruction = tmp;
         break;
     }
-};
+}
 
 Instruction Parser::instruction_type()
 {
@@ -66,7 +66,7 @@ std::string Parser::symbol()
     {
         return Parser::current_instruction.substr(1, Parser::current_instruction.length() - 2);
     }
-    return "";
+    return nullptr;
 }
 
 bool Parser::is_A_instruction(bool is_symbol_only)
@@ -82,15 +82,25 @@ bool Parser::is_L_instruction()
 
 std::string Parser::dest()
 {
-
+    auto assignment_offset = Parser::current_instruction.find('=');
+    return assignment_offset == std::string::npos ? "null"
+        : Parser::current_instruction.substr(0, assignment_offset);
 }
 
 std::string Parser::comp()
 {
-
+    auto assignment_offset = Parser::current_instruction.find('=');
+    auto delimiter_offset = Parser::current_instruction.find(';');
+    auto start_pos = assignment_offset == std::string::npos ? 0
+        : ++assignment_offset;
+    auto end_pos = delimiter_offset == std::string::npos ? Parser::current_instruction.length()
+        : delimiter_offset - 2;
+    return Parser::current_instruction.substr(start_pos, end_pos);
 }
 
 std::string Parser::jump()
 {
-
+    auto delimiter_offset = Parser::current_instruction.find(';');
+    return delimiter_offset == std::string::npos ? "null"
+        : Parser::current_instruction.substr(++delimiter_offset, Parser::current_instruction.length());
 }

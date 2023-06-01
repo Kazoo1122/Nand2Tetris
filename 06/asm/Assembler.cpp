@@ -12,7 +12,12 @@ int main(int argc, char **argv)
     while (parser.has_more_lines())
     {
         parser.advance();
-        std::cout << parser.symbol() << std::endl;
+        if (parser.instruction_type() == Instruction::C_INSTRUCTION) {
+            std::cout << "dest: " + parser.dest() << std::endl;
+            std::cout << "comp: " + parser.comp() << std::endl;
+            std::cout << "jump: " + parser.jump() << std::endl;
+            std::cout << "------------------" << std::endl;
+        }
     }
     // std::ifstream ifs(asm_file);
     // if (ifs.fail())
