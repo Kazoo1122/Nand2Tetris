@@ -34,7 +34,12 @@ std::string Code::dest(std::string dest)
 
 std::string Code::comp(std::string comp)
 {
-
+    auto bin = 0b0;
+    if (comp == "0")
+    {
+        bin = Code::comp_map["zx"] + Code::comp_map["zy"] + Code::comp_map["f"];
+        return std::bitset<3>(bin).to_string(); 
+    }
 }
 std::string Code::jump(std::string jump)
 {
