@@ -1,5 +1,7 @@
+#include <iostream>
 #include <string>
 #include <bitset>
+#include <regex>
 #include "include/Code.h"
 
 Code::Code()
@@ -10,12 +12,13 @@ Code::Code()
         std::pair{'A', 0b100},
     };
     Code::comp_map = {
-        std::pair{"zx", 0b100000},
-        std::pair{"zy", 0b001000},
-        std::pair{"nx", 0b010000},
-        std::pair{"ny", 0b000100},
-        std::pair{"f",  0b000010},
-        std::pair{"no", 0b000001},
+        std::pair{"a",  0b1000000},
+        std::pair{"zx", 0b0100000},
+        std::pair{"nx", 0b0010000},
+        std::pair{"zy", 0b0001000},
+        std::pair{"ny", 0b0000100},
+        std::pair{"f",  0b0000010},
+        std::pair{"no", 0b0000001},
     };
     Code::jump_map = {
         std::pair{'G', 0b1},
@@ -35,12 +38,56 @@ std::string Code::dest(std::string dest)
 std::string Code::comp(std::string comp)
 {
     auto bin = 0b0;
-    if (comp == "0")
+    if (comp[1] == '&')
     {
-        bin = Code::comp_map["zx"] + Code::comp_map["zy"] + Code::comp_map["f"];
-        return std::bitset<3>(bin).to_string(); 
+        if (comp[2] == 'M')
+        {
+            bin += Code::comp_map["a"];
+        } else if (comp[2] != 'A')
+        {
+            return "";
+        } 
+        return comp[0] == 'D' ? std::bitset<7>(bin).to_string() : "";
+    } else if (comp[1] == '|')
+    {
+        if (comp[2] == 'M')
+        {
+            bin += Code::comp_map["a"];
+        } else if (comp[2] != 'A')
+        {
+            return "";
+        } 
+        bin += Code::comp_map["nx"] + Code::comp_map["ny"] + Code::comp_map["no"];
+        return comp[0] == 'D' ? std::bitset<7>(bin).to_string() : "";
+    }
+    try {
+        switch (stoi(comp))
+        {
+            case 0:
+                bin = Code::comp_map["zx"] + Code::comp_map["zy"] + Code::comp_map["f"];
+                break;
+            case 1:
+                bin = Code::comp_map["zx"] + Code::comp_map["zy"]
+                    + Code::comp_map["nx"] + Code::comp_map["ny"]
+                    + Code::comp_map["f"]  + Code::comp_map["no"];
+                break;
+            case -1:
+                bin = Code::comp_map["zx"] + Code::comp_map["zy"]
+                    + Code::comp_map["nx"] + Code::comp_map["f"];
+            default:
+                return "";
+        }
+        return std::bitset<7>(bin).to_string(); 
+    } catch (const std::invalid_argument& e)
+    {
+        std::cout << "comp was not int." << std::endl;
+    } catch (const std::out_of_range& e)
+    {
+        std::cout << "comp value was out of range." << std::endl;
+        return "";
     }
 }
+
 std::string Code::jump(std::string jump)
 {
     auto bin = 0b0;
