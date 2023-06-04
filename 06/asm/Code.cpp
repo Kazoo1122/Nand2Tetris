@@ -38,33 +38,42 @@ std::string Code::dest(std::string dest)
 std::string Code::comp(std::string comp)
 {
     auto bin = 0b0;
-    if (comp[1] == '&')
+    // The most left bit is 1 or 0(M or others)?
+    if (comp.find('M') != std::string::npos)
     {
-        if (comp[2] == 'M')
-        {
-            bin += Code::comp_map["a"];
-        } else if (comp[2] != 'A')
-        {
-            return "";
-        } 
-        return comp[0] == 'D' ? std::bitset<7>(bin).to_string() : "";
-    } else if (comp[1] == '|')
-    {
-        if (comp[2] == 'M')
-        {
-            bin += Code::comp_map["a"];
-        } else if (comp[2] != 'A')
-        {
-            return "";
-        } 
-        bin += Code::comp_map["nx"] + Code::comp_map["ny"] + Code::comp_map["no"];
-        return comp[0] == 'D' ? std::bitset<7>(bin).to_string() : "";
+        bin += Code::comp_map["a"];
     }
+
+    if (std::regex_search(comp, std::regex(R"(D\&(A|M))")))
+    {
+    }
+    else if (std::regex_search(comp, std::regex(R"(D\|(A|M))")))
+    {
+        bin += Code::comp_map["nx"] + Code::comp_map["ny"] + Code::comp_map["no"];
+    }
+    else if (std::regex_search(comp, std::regex(R"(D\+(A|M))")))
+    {
+        bin += Code::comp_map["f"];
+    }
+    else if (std::regex_search(comp, std::regex(R"(D\-(A|M))")))
+    {
+        bin += Code::comp_map["ny"] + Code::comp_map["f"] + Code::comp_map["no"];
+    }
+    else
+    {
+        // skip return if any check wasn't passed.
+        goto CONSTANTS;
+    }
+    return std::bitset<7>(bin).to_string();
+
+    CONSTANTS:
+    // Is comp a constant value?
     try {
         switch (stoi(comp))
         {
             case 0:
-                bin = Code::comp_map["zx"] + Code::comp_map["zy"] + Code::comp_map["f"];
+                bin = Code::comp_map["zx"] + Code::comp_map["zy"]
+                    + Code::comp_map["f"];
                 break;
             case 1:
                 bin = Code::comp_map["zx"] + Code::comp_map["zy"]
@@ -78,10 +87,12 @@ std::string Code::comp(std::string comp)
                 return "";
         }
         return std::bitset<7>(bin).to_string(); 
-    } catch (const std::invalid_argument& e)
+    }
+    catch (const std::invalid_argument& e)
     {
         std::cout << "comp was not int." << std::endl;
-    } catch (const std::out_of_range& e)
+    }
+    catch (const std::out_of_range& e)
     {
         std::cout << "comp value was out of range." << std::endl;
         return "";
