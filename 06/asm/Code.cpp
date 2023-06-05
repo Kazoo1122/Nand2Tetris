@@ -44,59 +44,92 @@ std::string Code::comp(std::string comp)
         bin += Code::comp_map["a"];
     }
 
-    if (std::regex_search(comp, std::regex(R"(D\&(A|M))")))
+    // is logical and?
+    if (std::regex_search(comp, std::regex(R"(D&(A|M))")))
     {
+        // then remain the binary is 0.
     }
     else if (std::regex_search(comp, std::regex(R"(D\|(A|M))")))
     {
         bin += Code::comp_map["nx"] + Code::comp_map["ny"] + Code::comp_map["no"];
     }
+    // is addition?
     else if (std::regex_search(comp, std::regex(R"(D\+(A|M))")))
     {
         bin += Code::comp_map["f"];
     }
-    else if (std::regex_search(comp, std::regex(R"(D\-(A|M))")))
+    // is D subtracted?
+    else if (std::regex_search(comp, std::regex(R"(D-(A|M))")))
+    {
+        bin += Code::comp_map["nx"] + Code::comp_map["f"] + Code::comp_map["no"];
+    }
+    // is M or A subtracted?
+    else if (std::regex_search(comp, std::regex(R"((A|M)-D)")))
     {
         bin += Code::comp_map["ny"] + Code::comp_map["f"] + Code::comp_map["no"];
     }
     else
     {
-        // skip return if any check wasn't passed.
-        goto CONSTANTS;
+        if (comp.find('D') != std::string::npos)
+        {
+            bin += Code::comp_map["zy"] + Code::comp_map["ny"];
+        }
+        else if (comp.find('A') != std::string::npos || comp.find('M') != std::string::npos)
+        {
+            bin += Code::comp_map["zx"] + Code::comp_map["nx"];
+        }
+        else
+        {
+            // Is comp a constant value?
+            try {
+                switch (stoi(comp))
+                {
+                    case 0:
+                        bin = Code::comp_map["zx"] + Code::comp_map["zy"]
+                            + Code::comp_map["f"];
+                        break;
+                    case 1:
+                        bin = Code::comp_map["zx"] + Code::comp_map["zy"]
+                            + Code::comp_map["nx"] + Code::comp_map["ny"]
+                            + Code::comp_map["f"]  + Code::comp_map["no"];
+                        break;
+                    case -1:
+                        bin = Code::comp_map["zx"] + Code::comp_map["zy"]
+                            + Code::comp_map["nx"] + Code::comp_map["f"];
+                    default:
+                        return "";
+                }
+                return std::bitset<7>(bin).to_string(); 
+            }
+            catch (const std::invalid_argument& e)
+            {
+                std::cout << "comp was not int." << std::endl;
+            }
+            catch (const std::out_of_range& e)
+            {
+                std::cout << "comp value was out of range." << std::endl;
+                return "";
+            }
+        }
+
+        if (comp[0] == '!')
+        {
+            bin += Code::comp_map["no"];
+        }
+        else if (comp[0] == '-')
+        {
+            bin += Code::comp_map["f"] + Code::comp_map["no"];
+        }
+        else if (comp.find("+1") != std::string::npos)
+        {
+            bin += Code::comp_map["f"] + Code::comp_map["no"] + Code::comp_map[comp[0] == 'D' ? "nx" : "ny"];
+        }
+        else if (comp.find("-1") != std::string::npos)
+        {
+            bin += Code::comp_map["f"];
+        }
     }
     return std::bitset<7>(bin).to_string();
-
-    CONSTANTS:
-    // Is comp a constant value?
-    try {
-        switch (stoi(comp))
-        {
-            case 0:
-                bin = Code::comp_map["zx"] + Code::comp_map["zy"]
-                    + Code::comp_map["f"];
-                break;
-            case 1:
-                bin = Code::comp_map["zx"] + Code::comp_map["zy"]
-                    + Code::comp_map["nx"] + Code::comp_map["ny"]
-                    + Code::comp_map["f"]  + Code::comp_map["no"];
-                break;
-            case -1:
-                bin = Code::comp_map["zx"] + Code::comp_map["zy"]
-                    + Code::comp_map["nx"] + Code::comp_map["f"];
-            default:
-                return "";
-        }
-        return std::bitset<7>(bin).to_string(); 
-    }
-    catch (const std::invalid_argument& e)
-    {
-        std::cout << "comp was not int." << std::endl;
-    }
-    catch (const std::out_of_range& e)
-    {
-        std::cout << "comp value was out of range." << std::endl;
-        return "";
-    }
 }
 
 std::string Code::jump(std::string jump)
