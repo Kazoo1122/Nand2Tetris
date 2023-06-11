@@ -15,7 +15,7 @@ public:
     bool contains(std::string symbol);
     // Returns the address associated with symbol
     int get_address(std::string symbol);
+    std::map<std::string, int> table;
 
 private:
-    std::map<std::string, int> table;
 };

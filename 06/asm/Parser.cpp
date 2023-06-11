@@ -31,7 +31,7 @@ void Parser::advance()
 {
     while (Parser::has_more_lines())
     {
-        auto tmp = Parser::lines[++Parser::current_line_no];
+        auto tmp = Parser::lines[++Parser::current_line_no - 1];
         tmp = std::regex_replace(tmp, std::regex("(//.*)"), "");
         tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
         // if the current instruction has only whitespace, then skip.
@@ -62,9 +62,22 @@ std::string Parser::symbol()
     if (Parser::is_A_instruction(true))
     {
         return Parser::current_instruction.substr(1);
-    } else if (Parser::is_L_instruction())
+    }
+    else if (Parser::is_L_instruction())
     {
-        return Parser::current_instruction.substr(1, Parser::current_instruction.length() - 2);
+        return Parser::current_instruction.substr(
+            Parser::current_instruction.find('(') + 1,
+            Parser::current_instruction.find(')') - 1
+        );
+    }
+    return nullptr;
+}
+
+std::string Parser::decimal_number()
+{
+    if (Parser::is_A_instruction(false))
+    {
+        return Parser::current_instruction.substr(1);
     }
     return nullptr;
 }
@@ -77,13 +90,13 @@ bool Parser::is_A_instruction(bool is_symbol_only)
 
 bool Parser::is_L_instruction()
 {
-    return std::regex_search(Parser::current_instruction, std::regex(R"(^\(.*\)$)"));
+    return std::regex_search(Parser::current_instruction, std::regex(R"(\(.*\))"));
 }
 
 std::string Parser::dest()
 {
     auto assignment_offset = Parser::current_instruction.find('=');
-    return assignment_offset == std::string::npos ? "null"
+    return assignment_offset == std::string::npos ? nullptr
         : Parser::current_instruction.substr(0, assignment_offset);
 }
 
@@ -101,6 +114,11 @@ std::string Parser::comp()
 std::string Parser::jump()
 {
     auto delimiter_offset = Parser::current_instruction.find(';');
-    return delimiter_offset == std::string::npos ? "null"
+    return delimiter_offset == std::string::npos ? nullptr
         : Parser::current_instruction.substr(++delimiter_offset, Parser::current_instruction.length());
+}
+
+int Parser::get_current_line_no()
+{
+    return Parser::current_line_no;
 }

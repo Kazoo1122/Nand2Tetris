@@ -26,6 +26,7 @@ Code::Code()
         std::pair{'L', 0b100},
     };
 };
+
 std::string Code::dest(std::string dest)
 {
     auto bin = 0b0;

@@ -31,6 +31,10 @@ public:
     std::string comp();
     // Returns the instruction's jump field
     std::string jump();
+    // Number of lines currently being read
+    int get_current_line_no();
+    // Returns decimal number of A instruction
+    std::string decimal_number();
 
 private:
     std::vector<std::string> lines;
