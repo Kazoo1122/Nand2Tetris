@@ -8,31 +8,27 @@
 #include "include/SymbolTable.h"
 
 auto const FIRST_VAR_ADDRESS = 16;
-auto const C_INSTRUCTION_OP_CODE = "000";
+auto const C_INSTRUCTION_OP_CODE = "111";
 
 int main(int argc, char **argv)
 {
     auto asm_file = argv[1];
 
-    Parser *parser;
-    Code *bin_code;
-    SymbolTable *symbol_table;
-
-    parser = new Parser(argv[1]);
-    bin_code = new Code();
-    symbol_table = new SymbolTable();
+    Parser *first_parser = new Parser(asm_file);;
+    Code *bin_code = new Code();
+    SymbolTable *symbol_table = new SymbolTable();
 
     // First pass to read the program lines for adds the found labels to symbol table.
-    while (parser->has_more_lines())
+    while (first_parser->has_more_lines())
     {
-        parser->advance();
-        auto instruction_type = parser->instruction_type();
+        first_parser->advance();
+        auto instruction_type = first_parser->instruction_type();
         if (instruction_type == Instruction::L_INSTRUCTION)
         {
-            std::string symbol = parser->symbol();
+            std::string symbol = first_parser->symbol();
             if(!symbol_table->contains(symbol))
             {
-                symbol_table->add_entry(symbol, parser->get_current_line_no());
+                symbol_table->add_entry(symbol, first_parser->get_current_line_no());
             }
         }
     }
@@ -48,42 +44,49 @@ int main(int argc, char **argv)
     //     std::cout << key + ": " << address << std::endl;
     // }
 
+    Parser *second_parser = new Parser(asm_file);;
     auto latest_address = FIRST_VAR_ADDRESS;
 
-    while (parser->has_more_lines())
+    while (second_parser->has_more_lines())
     {
-        parser->advance();
-        auto instruction_type = parser->instruction_type();
-        std::cout << "line no: " << parser->get_current_line_no() << std::endl;
-        std::cout << "instruction: " << (int) instruction_type << std::endl;
+        second_parser->advance();
+        auto instruction_type = second_parser->instruction_type();
+        std::cout << "line no: " << second_parser->get_current_line_no() << std::endl;
+
 
         if (instruction_type == Instruction::A_INSTRUCTION)
         {
-            std::string symbol = parser->symbol();
-            if (!symbol.empty())
+            std::string symbol = second_parser->symbol();
+            std::cout << "symbol: " + symbol << std::endl;
+            if (symbol.empty())
             {
-                if(!symbol_table->contains(symbol))
-                {
-                    symbol_table->add_entry(symbol, ++latest_address);
-                }
-                else
-                {
-                    std::cout << "A: " << parser->decimal_number() << std::endl;
-                }
+                std::cout << "A: " << second_parser->decimal_number() << std::endl;
             }
             else
             {
-                std::cout << "A: " << symbol_table->get_address(symbol) << std::endl;
+                if(symbol_table->contains(symbol))
+                {
+                    std::cout << "A: " << symbol_table->get_address(symbol) << std::endl;
+                }
+                else
+                {
+                    symbol_table->add_entry(symbol, latest_address++);
+                }
             }
-        } else if (instruction_type == Instruction::C_INSTRUCTION)
+        }
+        else if (instruction_type == Instruction::C_INSTRUCTION)
         {
             std::string dest = "";
             std::string comp = "";
             std::string jump = "";
-            dest = bin_code->dest(parser->dest());
-            comp = bin_code->comp(parser->comp());
-            jump = bin_code->jump(parser->jump());
+            dest = bin_code->dest(second_parser->dest());
+            comp = bin_code->comp(second_parser->comp());
+            jump = bin_code->jump(second_parser->jump());
             std::cout << "C: " << C_INSTRUCTION_OP_CODE + dest + comp + jump << std::endl;
+        }
+        else if (instruction_type == Instruction::L_INSTRUCTION)
+        {
+            std::cout << "L instruction is skipped when the second pass." << std::endl;
         }
     }
     return EXIT_SUCCESS;

@@ -18,6 +18,8 @@ Parser::Parser(std::string file_path):
     std::string line;
     while(getline(ifs, line))
     {
+        // if is linefeed code crlf, then trim cr.
+        if (*(line.end() - 1) == 0x0d) line.pop_back();
         Parser::lines.push_back(line);
     };
 };
@@ -70,16 +72,16 @@ std::string Parser::symbol()
             Parser::current_instruction.find(')') - 1
         );
     }
-    return nullptr;
+    return "";
 }
 
 std::string Parser::decimal_number()
 {
-    if (Parser::is_A_instruction(false))
+    if (Parser::is_A_instruction(false) && !Parser::is_A_instruction(true))
     {
         return Parser::current_instruction.substr(1);
     }
-    return nullptr;
+    return "";
 }
 
 bool Parser::is_A_instruction(bool is_symbol_only)
@@ -96,7 +98,7 @@ bool Parser::is_L_instruction()
 std::string Parser::dest()
 {
     auto assignment_offset = Parser::current_instruction.find('=');
-    return assignment_offset == std::string::npos ? nullptr
+    return assignment_offset == std::string::npos ? ""
         : Parser::current_instruction.substr(0, assignment_offset);
 }
 
@@ -114,7 +116,7 @@ std::string Parser::comp()
 std::string Parser::jump()
 {
     auto delimiter_offset = Parser::current_instruction.find(';');
-    return delimiter_offset == std::string::npos ? nullptr
+    return delimiter_offset == std::string::npos ? ""
         : Parser::current_instruction.substr(++delimiter_offset, Parser::current_instruction.length());
 }
 
