@@ -12,7 +12,14 @@ auto const C_INSTRUCTION_OP_CODE = "111";
 
 int main(int argc, char **argv)
 {
-    auto asm_file = argv[1];
+    std::string asm_file = argv[1];
+    auto file_name = asm_file.substr(0, asm_file.find(".asm")) + ".hack";
+    std::ofstream ofs(file_name);
+    if (!ofs)
+    {
+        std::cout << "The output file can't open." << std::endl;
+        return EXIT_FAILURE;
+    }
 
     Parser *first_parser = new Parser(asm_file);;
     Code *bin_code = new Code();
@@ -33,17 +40,6 @@ int main(int argc, char **argv)
         }
     }
 
-    // std::vector<std::string> keys;
-    // for (const auto& [k, v]: symbol_table->table)
-    // {
-    //     keys.push_back(k);
-    // }
-    // for (const auto& key: keys)
-    // {
-    //     auto address = symbol_table->get_address(key);
-    //     std::cout << key + ": " << address << std::endl;
-    // }
-
     Parser *second_parser = new Parser(asm_file);;
     auto latest_address = FIRST_VAR_ADDRESS;
 
@@ -62,14 +58,18 @@ int main(int argc, char **argv)
             if (symbol.empty())
             {
                 auto decimal = second_parser->decimal();
-                std::cout << "A: " << second_parser->binary(decimal) << std::endl;
+                auto binary = second_parser->binary(decimal);
+                std::cout << "A: " << binary << std::endl;
+                ofs << binary << std::endl;
             }
             else
             {
                 if(symbol_table->contains(symbol))
                 {
                     auto address = symbol_table->get_address(symbol);
-                    std::cout << "A: " << second_parser->binary(std::to_string(address)) << std::endl;
+                    auto binary = second_parser->binary(std::to_string(address));
+                    std::cout << "A: " << binary << std::endl;
+                    ofs << binary << std::endl;
                 }
                 else
                 {
@@ -85,7 +85,9 @@ int main(int argc, char **argv)
             dest = bin_code->dest(second_parser->dest());
             comp = bin_code->comp(second_parser->comp());
             jump = bin_code->jump(second_parser->jump());
-            std::cout << "C: " << C_INSTRUCTION_OP_CODE + dest + comp + jump << std::endl;
+            auto binary = C_INSTRUCTION_OP_CODE + dest + comp + jump;
+            std::cout << "C: " << binary << std::endl;
+            ofs << binary << std::endl;
         }
         else if (instruction_type == Instruction::L_INSTRUCTION)
         {

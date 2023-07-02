@@ -24,6 +24,7 @@ Parser::Parser(std::string file_path):
     };
 };
 
+
 bool Parser::has_more_lines()
 {
     return Parser::lines.size() - 1 > Parser::current_line_no;
@@ -86,7 +87,8 @@ std::string Parser::decimal()
 
 std::string Parser::binary(std::string decimal)
 {
-    return '0' + std::bitset<15>(stoi(decimal)).to_string();
+    auto const A_INSTRUCTION_OP_CODE = '0';
+    return A_INSTRUCTION_OP_CODE + std::bitset<15>(stoi(decimal)).to_string();
 }
 
 bool Parser::is_A_instruction(bool is_symbol_only)
