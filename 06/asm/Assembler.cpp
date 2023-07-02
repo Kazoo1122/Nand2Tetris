@@ -47,6 +47,7 @@ int main(int argc, char **argv)
     Parser *second_parser = new Parser(asm_file);;
     auto latest_address = FIRST_VAR_ADDRESS;
 
+    std::cout << "==============================================" << std::endl;
     while (second_parser->has_more_lines())
     {
         second_parser->advance();
@@ -60,13 +61,15 @@ int main(int argc, char **argv)
             std::cout << "symbol: " + symbol << std::endl;
             if (symbol.empty())
             {
-                std::cout << "A: " << second_parser->decimal_number() << std::endl;
+                auto decimal = second_parser->decimal();
+                std::cout << "A: " << second_parser->binary(decimal) << std::endl;
             }
             else
             {
                 if(symbol_table->contains(symbol))
                 {
-                    std::cout << "A: " << symbol_table->get_address(symbol) << std::endl;
+                    auto address = symbol_table->get_address(symbol);
+                    std::cout << "A: " << second_parser->binary(std::to_string(address)) << std::endl;
                 }
                 else
                 {
@@ -88,6 +91,7 @@ int main(int argc, char **argv)
         {
             std::cout << "L instruction is skipped when the second pass." << std::endl;
         }
+        std::cout << "==============================================" << std::endl;
     }
     return EXIT_SUCCESS;
 }

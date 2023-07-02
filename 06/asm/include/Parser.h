@@ -34,7 +34,9 @@ public:
     // Number of lines currently being read
     int get_current_line_no();
     // Returns decimal number of A instruction
-    std::string decimal_number();
+    std::string decimal();
+    // Returns binary number of A instruction
+    std::string binary(std::string decimal);
 
 private:
     std::vector<std::string> lines;

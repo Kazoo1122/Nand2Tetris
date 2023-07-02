@@ -75,13 +75,18 @@ std::string Parser::symbol()
     return "";
 }
 
-std::string Parser::decimal_number()
+std::string Parser::decimal()
 {
     if (Parser::is_A_instruction(false) && !Parser::is_A_instruction(true))
     {
         return Parser::current_instruction.substr(1);
     }
     return "";
+}
+
+std::string Parser::binary(std::string decimal)
+{
+    return '0' + std::bitset<15>(stoi(decimal)).to_string();
 }
 
 bool Parser::is_A_instruction(bool is_symbol_only)
