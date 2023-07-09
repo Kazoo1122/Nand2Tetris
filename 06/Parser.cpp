@@ -27,7 +27,7 @@ Parser::Parser(std::string file_path):
 
 bool Parser::has_more_lines()
 {
-    return Parser::lines.size() - 1 > Parser::current_line_no;
+    return Parser::lines.size() > Parser::current_line_no;
 }
 
 void Parser::advance()
