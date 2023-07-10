@@ -18,6 +18,10 @@ Parser::Parser(std::string file_path):
     std::string line;
     while(getline(ifs, line))
     {
+        line = std::regex_replace(line, std::regex("(//.*)"), "");
+        line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+        // if the current instruction has only whitespace, then skip.
+        if (std::regex_match(line, std::regex(R"(^\s*?$(\r\n|\r|\n?)?)"))) continue;
         // if is linefeed code crlf, then trim cr.
         if (*(line.end() - 1) == 0x0d) line.pop_back();
         Parser::lines.push_back(line);
@@ -32,18 +36,9 @@ bool Parser::has_more_lines()
 
 void Parser::advance()
 {
-    while (Parser::has_more_lines())
+    if (Parser::has_more_lines())
     {
-        auto tmp = Parser::lines[++Parser::current_line_no - 1];
-        tmp = std::regex_replace(tmp, std::regex("(//.*)"), "");
-        tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
-        // if the current instruction has only whitespace, then skip.
-        if (std::regex_match(tmp, std::regex(R"(^\s*?$(\r\n|\r|\n?)?)")))
-        {
-            continue;
-        }
-        Parser::current_instruction = tmp;
-        break;
+        Parser::current_instruction = Parser::lines[++Parser::current_line_no - 1];
     }
 }
 
@@ -116,7 +111,7 @@ std::string Parser::comp()
     auto start_pos = assignment_offset == std::string::npos ? 0
         : ++assignment_offset;
     auto end_pos = delimiter_offset == std::string::npos ? Parser::current_instruction.length()
-        : delimiter_offset - 2;
+        : delimiter_offset;
     return Parser::current_instruction.substr(start_pos, end_pos);
 }
 
@@ -130,4 +125,15 @@ std::string Parser::jump()
 int Parser::get_current_line_no()
 {
     return Parser::current_line_no;
+}
+
+void Parser::remove_instruction()
+{
+    Parser::lines.erase(std::cbegin(Parser::lines) + --Parser::current_line_no);
+}
+
+void Parser::init()
+{
+    Parser::current_instruction = "";
+    Parser::current_line_no = 0;
 }

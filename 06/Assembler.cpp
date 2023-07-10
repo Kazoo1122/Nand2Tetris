@@ -21,64 +21,66 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    Parser *first_parser = new Parser(asm_file);;
+    Parser *parser = new Parser(asm_file);;
     Code *bin_code = new Code();
     SymbolTable *symbol_table = new SymbolTable();
 
-    std::cout << "----------------------------------------------" << std::endl;
     // First pass to read the program lines for adds the found labels to symbol table.
-    while (first_parser->has_more_lines())
+    while (parser->has_more_lines())
     {
-        first_parser->advance();
-        auto instruction_type = first_parser->instruction_type();
+        parser->advance();
+        auto instruction_type = parser->instruction_type();
         if (instruction_type == Instruction::L_INSTRUCTION)
         {
-            std::string symbol = first_parser->symbol();
-            std::cout << first_parser->get_current_line_no() << std::endl;
+            std::string symbol = parser->symbol();
+            parser->remove_instruction();
+            std::cout << "----------------------------------------------" << std::endl;
             std::cout << "Symbol : " << symbol << std::endl;
-            std::cout << "Line no: " << std::to_string(first_parser->get_current_line_no()) << std::endl;
+            std::cout << "Line no: " << std::to_string(parser->get_current_line_no()) << std::endl;
             if(!symbol_table->contains(symbol))
             {
-                symbol_table->add_entry(symbol, first_parser->get_current_line_no());
+                symbol_table->add_entry(symbol, parser->get_current_line_no());
             }
         }
-        std::cout << "----------------------------------------------" << std::endl;
     }
 
-    Parser *second_parser = new Parser(asm_file);;
     auto latest_address = FIRST_VAR_ADDRESS;
+    parser->init();
 
     std::cout << "==============================================" << std::endl;
-    while (second_parser->has_more_lines())
+    while (parser->has_more_lines())
     {
-        second_parser->advance();
-        auto instruction_type = second_parser->instruction_type();
-        std::cout << "Line no: " << std::to_string(second_parser->get_current_line_no()) << std::endl;
+        parser->advance();
+        auto instruction_type = parser->instruction_type();
+        std::cout << "Line no: " << std::to_string(parser->get_current_line_no()) << std::endl;
 
         if (instruction_type == Instruction::A_INSTRUCTION)
         {
-            std::string symbol = second_parser->symbol();
-            std::cout << "symbol: " + symbol << std::endl;
+            std::string symbol = parser->symbol();
+            std::cout << "Symbol: " + symbol << std::endl;
             if (symbol.empty())
             {
-                auto decimal = second_parser->decimal();
-                auto binary = second_parser->binary(decimal);
+                auto decimal = parser->decimal();
+                auto binary = parser->binary(decimal);
                 std::cout << "A: " << binary << std::endl;
                 ofs << binary << std::endl;
             }
             else
             {
+                int address;
+                std::string binary;
                 if(symbol_table->contains(symbol))
                 {
-                    auto address = symbol_table->get_address(symbol);
-                    auto binary = second_parser->binary(std::to_string(address));
-                    std::cout << "A: " << binary << std::endl;
-                    ofs << binary << std::endl;
+                    address = symbol_table->get_address(symbol);
                 }
                 else
                 {
+                    address = latest_address;
                     symbol_table->add_entry(symbol, latest_address++);
                 }
+                binary = parser->binary(std::to_string(address));
+                ofs << binary << std::endl;
+                std::cout << "A: " << binary << std::endl;
             }
         }
         else if (instruction_type == Instruction::C_INSTRUCTION)
@@ -86,12 +88,12 @@ int main(int argc, char **argv)
             std::string dest = "";
             std::string comp = "";
             std::string jump = "";
-            std::cout << "Parser dest: " + second_parser->dest() << std::endl;
-            std::cout << "Parser comp: " + second_parser->comp() << std::endl;
-            std::cout << "Parser jump: " + second_parser->jump() << std::endl;
-            dest = bin_code->dest(second_parser->dest());
-            comp = bin_code->comp(second_parser->comp());
-            jump = bin_code->jump(second_parser->jump());
+            std::cout << "Parser dest: " + parser->dest() << std::endl;
+            std::cout << "Parser comp: " + parser->comp() << std::endl;
+            std::cout << "Parser jump: " + parser->jump() << std::endl;
+            dest = bin_code->dest(parser->dest());
+            comp = bin_code->comp(parser->comp());
+            jump = bin_code->jump(parser->jump());
             std::cout << "Code   dest: " + dest << std::endl;
             std::cout << "Code   comp: " + comp << std::endl;
             std::cout << "Code   jump: " + jump << std::endl;

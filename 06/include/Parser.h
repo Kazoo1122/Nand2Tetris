@@ -37,6 +37,8 @@ public:
     std::string decimal();
     // Returns binary number of A instruction
     std::string binary(std::string decimal);
+    void remove_instruction();
+    void init();
 
 private:
     std::vector<std::string> lines;

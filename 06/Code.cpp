@@ -52,7 +52,9 @@ std::string Code::comp(std::string comp)
     }
     else if (std::regex_search(comp, std::regex(R"(D\|(A|M))")))
     {
-        bin += Code::comp_map["nx"] + Code::comp_map["ny"] + Code::comp_map["no"];
+        bin += Code::comp_map["nx"];
+        bin += Code::comp_map["ny"];
+        bin += Code::comp_map["no"];
     }
     // is addition?
     else if (std::regex_search(comp, std::regex(R"(D\+(A|M))")))
@@ -62,22 +64,28 @@ std::string Code::comp(std::string comp)
     // is D subtracted?
     else if (std::regex_search(comp, std::regex(R"(D-(A|M))")))
     {
-        bin += Code::comp_map["nx"] + Code::comp_map["f"] + Code::comp_map["no"];
+        bin += Code::comp_map["nx"];
+        bin += Code::comp_map["f"];
+        bin += Code::comp_map["no"];
     }
     // is M or A subtracted?
     else if (std::regex_search(comp, std::regex(R"((A|M)-D)")))
     {
-        bin += Code::comp_map["ny"] + Code::comp_map["f"] + Code::comp_map["no"];
+        bin += Code::comp_map["ny"];
+        bin += Code::comp_map["f"];
+        bin += Code::comp_map["no"];
     }
     else
     {
         if (comp.find('D') != std::string::npos)
         {
-            bin += Code::comp_map["zy"] + Code::comp_map["ny"];
+            bin += Code::comp_map["zy"];
+            bin += Code::comp_map["ny"];
         }
         else if (comp.find('A') != std::string::npos || comp.find('M') != std::string::npos)
         {
-            bin += Code::comp_map["zx"] + Code::comp_map["nx"];
+            bin += Code::comp_map["zx"];
+            bin += Code::comp_map["nx"];
         }
         else
         {
@@ -85,18 +93,25 @@ std::string Code::comp(std::string comp)
             try {
                 switch (stoi(comp))
                 {
+                    case -1:
+                        bin += Code::comp_map["zx"];
+                        bin += Code::comp_map["zy"];
+                        bin += Code::comp_map["nx"];
+                        bin += Code::comp_map["f"];
+                        break;
                     case 0:
-                        bin = Code::comp_map["zx"] + Code::comp_map["zy"]
-                            + Code::comp_map["f"];
+                        bin = Code::comp_map["zx"];
+                        bin += Code::comp_map["zy"];
+                        bin += Code::comp_map["f"];
                         break;
                     case 1:
-                        bin = Code::comp_map["zx"] + Code::comp_map["zy"]
-                            + Code::comp_map["nx"] + Code::comp_map["ny"]
-                            + Code::comp_map["f"]  + Code::comp_map["no"];
+                        bin += Code::comp_map["zx"];
+                        bin += Code::comp_map["zy"];
+                        bin += Code::comp_map["nx"];
+                        bin += Code::comp_map["ny"];
+                        bin += Code::comp_map["f"];
+                        bin += Code::comp_map["no"];
                         break;
-                    case -1:
-                        bin = Code::comp_map["zx"] + Code::comp_map["zy"]
-                            + Code::comp_map["nx"] + Code::comp_map["f"];
                     default:
                         return "";
                 }
@@ -113,21 +128,24 @@ std::string Code::comp(std::string comp)
             }
         }
 
-        if (comp[0] == '!')
+        if (comp.find("-1") != std::string::npos)
+        {
+            bin += Code::comp_map["f"];
+        }
+        else if (comp.find("+1") != std::string::npos)
+        {
+            bin += Code::comp_map["f"];
+            bin += Code::comp_map["no"];
+            bin += Code::comp_map[comp[0] == 'D' ? "nx" : "ny"];
+        }
+        else if (comp[0] == '!')
         {
             bin += Code::comp_map["no"];
         }
         else if (comp[0] == '-')
         {
-            bin += Code::comp_map["f"] + Code::comp_map["no"];
-        }
-        else if (comp.find("+1") != std::string::npos)
-        {
-            bin += Code::comp_map["f"] + Code::comp_map["no"] + Code::comp_map[comp[0] == 'D' ? "nx" : "ny"];
-        }
-        else if (comp.find("-1") != std::string::npos)
-        {
             bin += Code::comp_map["f"];
+            bin += Code::comp_map["no"];
         }
     }
     return std::bitset<7>(bin).to_string();
@@ -146,6 +164,11 @@ std::string Code::jump(std::string jump)
         }
         return std::bitset<3>(bin + Code::jump_map['E']).to_string();
     }
-    bin = jump == "JMP" ? Code::jump_map['G'] + Code::jump_map['L'] + Code::jump_map['E'] : bin;
+    if(jump == "JMP")
+    {
+        bin += Code::jump_map['G'];
+        bin += Code::jump_map['L'];
+        bin += Code::jump_map['E'];
+    }
     return std::bitset<3>(bin).to_string();
 }
