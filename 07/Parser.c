@@ -154,37 +154,111 @@ CommandType command_type(Parser *parser)
     printf("[command_type] tail=%s\n", tail);
     int char_count = tail - parser->current_instruction;
     printf("[command_type] char_count=%d\n", char_count);
-    char command[char_count + 1];
-    strncpy(command, parser->current_instruction, char_count);
-    command[char_count] = '\0';
-    printf("[command_type] command=%s\n", command);
+    parser->command = (char *) malloc((char_count + 1) * sizeof(char *));
+    // char command[char_count + 1];
+    strncpy(parser->command, parser->current_instruction, char_count);
+    parser->command[char_count] = '\0';
+    printf("[command_type] command=%s\n", parser->command);
 
     if (
-        strcmp(command, "add")
-        || strcmp(command, "sub")
-        || strcmp(command, "neg")
-        || strcmp(command, "eq")
-        || strcmp(command, "gt")
-        || strcmp(command, "lt")
-        || strcmp(command, "and")
-        || strcmp(command, "or")
-        || strcmp(command, "not")
+        strcmp(parser->command, "add") == 0
+        || strcmp(parser->command, "sub") == 0
+        || strcmp(parser->command, "neg") == 0
+        || strcmp(parser->command, "eq") == 0
+        || strcmp(parser->command, "gt") == 0
+        || strcmp(parser->command, "lt") == 0
+        || strcmp(parser->command, "and") == 0
+        || strcmp(parser->command, "or") == 0
+        || strcmp(parser->command, "not") == 0
     )
     {
         return C_ARITHMETIC;
     }
-    else if (strcmp(command, "push"))
+    else if (strcmp(parser->command, "push") == 0)
     {
         return C_PUSH;
     }
-    else if (strcmp(command, "pop"))
+    else if (strcmp(parser->command, "pop") == 0)
     {
         return C_POP;
+    }
+    else if (strcmp(parser->command, "label") == 0)
+    {
+        return C_LABEL;
+    }
+    else if (strcmp(parser->command, "goto") == 0)
+    {
+        return C_GOTO;
+    }
+    else if (strcmp(parser->command, "if-goto") == 0)
+    {
+        return C_IF;
+    }
+    else if (strcmp(parser->command, "Function") == 0)
+    {
+        return C_FUNCTION;
+    }
+    else if (strcmp(parser->command, "return") == 0)
+    {
+        return C_RETURN;
+    }
+    else if (strcmp(parser->command, "Call") == 0)
+    {
+        return C_CALL;
     }
     else
     {
         printf("[command_type] The passed command is invalid.\n");
         exit(1);
+    }
+}
+
+char *arg1(Parser *parser, CommandType type)
+{
+    if (type == C_ARITHMETIC)
+    {
+        return parser->command;
+    }
+    else if (type == C_RETURN)
+    {
+        return NULL;
+    }
+    else
+    {
+        printf("current=%p\n", parser->current_instruction);
+        char *first_blank = strchr(parser->current_instruction, ' ');
+        printf("first=%p\n", first_blank);
+        printf("first=%s\n", first_blank);
+        char *second_blank = strchr(first_blank + 1, ' ');
+        printf("second=%p\n", second_blank);
+        printf("second=%s\n", second_blank);
+        int length = second_blank - first_blank;
+        printf("length=%d\n", length);
+        char *arg = (char *) malloc(length * sizeof(char *));
+        strncpy(arg, first_blank + 1, length - 1);
+        arg[length] = '\0';
+        printf("arg=%s\n", arg);
+        return arg;
+    }
+}
+
+int *arg2(Parser *parser, CommandType type)
+{
+    if (
+        type == C_PUSH
+        || type == C_POP
+        || type == C_FUNCTION
+        || type == C_CALL
+    )
+    {
+        char *arg = strrchr(parser->current_instruction, ' ');
+        int num = *++arg - '0';
+        int *num_p = &num;
+        return num_p;
+    }
+    else
+    {
+        return NULL;
     }
 }
 
@@ -194,4 +268,5 @@ void parser_finalize(Parser *parser)
     {
         free(parser->lines[i]);
     }
+    free(parser->lines);
 }

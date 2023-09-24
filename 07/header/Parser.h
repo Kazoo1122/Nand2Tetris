@@ -21,6 +21,7 @@ typedef struct
     unsigned int current_line_no;
     unsigned int line_total;
     char *current_instruction;
+    char *command;
 } Parser;
 
 // ---------------------------------------------------------------------
@@ -36,9 +37,9 @@ void advance(Parser *parser);
 
 CommandType command_type(Parser *parser);
 
-char *arg1();
+char *arg1(Parser *parser, CommandType type);
 
-int arg2();
+int *arg2(Parser *parser, CommandType type);
 
 static unsigned int parse_file_contents(
     FILE *fp,

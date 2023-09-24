@@ -2,4 +2,7 @@
 **/*.out
 **/*.tst
 **/*.txt
+**/*.hack
+**/*.json
+**/*.vm
 **/*.DS_Store
