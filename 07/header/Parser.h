@@ -6,6 +6,8 @@
 // ---------------------------------------------------------------------
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include "CommandType.h"
 
 // ---------------------------------------------------------------------
@@ -27,7 +29,7 @@ typedef struct
 // ---------------------------------------------------------------------
 // Prototype declaration
 // ---------------------------------------------------------------------
-void parser_initialize(Parser *parser, char *file_path);
+void initialize_parser(Parser *parser, char *file_path);
 
 // Checks if there is more work to do.
 bool has_more_lines(Parser *parser);
@@ -37,9 +39,9 @@ void advance(Parser *parser);
 
 CommandType command_type(Parser *parser);
 
-char *arg1(Parser *parser, CommandType type);
+void *arg1(char **dest, Parser *parser, CommandType type);
 
-int *arg2(Parser *parser, CommandType type);
+void arg2(int **dest, Parser *parser, CommandType type);
 
 static unsigned int parse_file_contents(
     FILE *fp,

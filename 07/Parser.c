@@ -1,11 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 #include "header/Parser.h"
-#include "header/CommandType.h"
 
-void parser_initialize(Parser *parser, char *file_path)
+void initialize_parser(Parser *parser, char *file_path)
 {
     printf("[parser_initialize] start\n");
     FILE *fp = NULL;
@@ -17,7 +12,6 @@ void parser_initialize(Parser *parser, char *file_path)
         return;
     }
 
-    char c = '\0';
     unsigned int line_total = parse_file_contents(fp, NULL, NULL);
     rewind(fp);
     unsigned int column_counts[line_total];
@@ -213,14 +207,16 @@ CommandType command_type(Parser *parser)
     }
 }
 
-char *arg1(Parser *parser, CommandType type)
+void *arg1(char **dest, Parser *parser, CommandType type)
 {
     if (type == C_ARITHMETIC)
     {
-        return parser->command;
+        *dest = parser->command;
+        return NULL;
     }
     else if (type == C_RETURN)
     {
+        *dest = NULL;
         return NULL;
     }
     else
@@ -238,11 +234,12 @@ char *arg1(Parser *parser, CommandType type)
         strncpy(arg, first_blank + 1, length - 1);
         arg[length] = '\0';
         printf("arg=%s\n", arg);
+        *dest = arg;
         return arg;
     }
 }
 
-int *arg2(Parser *parser, CommandType type)
+void arg2(int **dest, Parser *parser, CommandType type)
 {
     if (
         type == C_PUSH
@@ -254,11 +251,11 @@ int *arg2(Parser *parser, CommandType type)
         char *arg = strrchr(parser->current_instruction, ' ');
         int num = *++arg - '0';
         int *num_p = &num;
-        return num_p;
+        *dest = num_p;
     }
     else
     {
-        return NULL;
+        *dest = NULL;
     }
 }
 

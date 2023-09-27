@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 #include "header/Parser.h"
@@ -73,12 +74,16 @@ int main(int argc, char **argv)
     strcat(asm_file, ".asm");
     printf("vm_file=\'%s\', asm_file=\'%s\'\n", vm_file, asm_file);
     Parser parser;
-    parser_initialize(&parser, vm_file);
+    initialize_parser(&parser, vm_file);
     CommandType type = command_type(&parser);
     printf("type=%d\n", type);
-    char *arg1_var = arg1(&parser, type);
+    char *arg1_var;
+    void *result;
+    result = arg1(&arg1_var, &parser, type);
     printf("arg1=%s\n", arg1_var);
-    int *arg2_var = arg2(&parser, type);
+    if (result != NULL) free(arg1_var);
+    int *arg2_var;
+    arg2(&arg2_var, &parser, type);
     printf("arg2=%d\n", *arg2_var);
     parser_finalize(&parser);
 }

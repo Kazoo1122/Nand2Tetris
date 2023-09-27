@@ -1,33 +1,43 @@
-#ifndef CODE_WRITER_H
-#define CODE_WRITER_H
+#ifndef RAM_H
+#define RAM_H
 
 // ---------------------------------------------------------------------
 // Included header
 // ---------------------------------------------------------------------
-#include <stdio.h>
-#include <string.h>
-#include "CommandType.h"
-#include "RAM.h"
+#include <stdlib.h>
 
 // ---------------------------------------------------------------------
 // Macro definition
 // ---------------------------------------------------------------------
+#define MAX_ADDRESS (2047)
 
 // ---------------------------------------------------------------------
 // Type definition
 // ---------------------------------------------------------------------
-typedef struct
+typedef enum
 {
-    FILE *output;
-    char *file_name;
-} CodeWriter;
+    CONSTANT = -1
+    , SP
+    , LCL
+    , ARG
+    , THIS
+    , THAT
+    , TEMP
+    , R13
+    , R14
+    , R15
+    , STATIC
+    , STACK = 256
+} Symbol;
+
+static int *ram;
 
 // ---------------------------------------------------------------------
 // Prototype declaration
 // ---------------------------------------------------------------------
-int initialize_writer(CodeWriter *writer, char *file_path);
-void write_arithmetic(CodeWriter *writer, char *command);
-void write_push_pop(CodeWriter *writer, CommandType command, char *segment, int index);
-void close(CodeWriter *writer);
+void initialize_ram();
+int get_ram(int *dest, unsigned int address);
+int set_ram(int value, unsigned int address);
+void free_ram();
 
 #endif
