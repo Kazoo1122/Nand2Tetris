@@ -3,6 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include "header/Parser.h"
+#include "header/CodeWriter.h"
 
 
 int is_vm_file(const char *file_name)
@@ -68,22 +69,54 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    int cc = strlen(vm_file);
-    char asm_file[cc + 1];
-    strncpy(asm_file, vm_file, (cc - 3));
-    strcat(asm_file, ".asm");
-    printf("vm_file=\'%s\', asm_file=\'%s\'\n", vm_file, asm_file);
+    // initialize
     Parser parser;
     initialize_parser(&parser, vm_file);
-    CommandType type = command_type(&parser);
-    printf("type=%d\n", type);
-    char *arg1_var;
-    void *result;
-    result = arg1(&arg1_var, &parser, type);
-    printf("arg1=%s\n", arg1_var);
-    if (result != NULL) free(arg1_var);
-    int *arg2_var;
-    arg2(&arg2_var, &parser, type);
-    printf("arg2=%d\n", *arg2_var);
+
+    CodeWriter writer;
+    initialize_writer(&writer, vm_file);
+
+    while (true)
+    {
+        CommandType type = command_type(&parser);
+        printf("type=%d\n", type);
+
+        char *arg1_val = NULL;
+        void *result = NULL;
+        int *arg2_val = NULL;
+
+        switch (type)
+        {
+            case C_ARITHMETIC:
+                result = arg1(&arg1_val, &parser, type);
+                printf("arg1=%s\n", arg1_val);
+
+                write_arithmetic(&writer, arg1_val);
+
+                if (result != NULL) free(arg1_val);
+                break;
+
+            case C_PUSH:
+            case C_POP:
+                result = arg1(&arg1_val, &parser, type);
+                printf("arg1=%s\n", arg1_val);
+                arg2(&arg2_val, &parser, type);
+                printf("arg2=%d\n", *arg2_val);
+
+                write_push_pop(&writer, type, arg1_val, *arg2_val);
+
+                if (result != NULL) free(arg1_val);
+                break;
+
+            default:
+                break;
+        }
+
+        if (has_more_lines(&parser) == false) break;
+        advance(&parser);
+    }
+
+    // close
     parser_finalize(&parser);
+    close(&writer);
 }

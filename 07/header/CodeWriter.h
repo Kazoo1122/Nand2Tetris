@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "CommandType.h"
-#include "RAM.h"
 
 // ---------------------------------------------------------------------
 // Macro definition

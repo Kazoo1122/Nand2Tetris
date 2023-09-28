@@ -49,7 +49,7 @@ void initialize_parser(Parser *parser, char *file_path)
     return;
 }
 
-unsigned int parse_file_contents(
+static unsigned int parse_file_contents(
     FILE *fp,
     unsigned int *column_counts,
     char *column_contents
@@ -126,7 +126,7 @@ unsigned int parse_file_contents(
     return line;
 }
 
-bool has_more_line(Parser *parser)
+bool has_more_lines(Parser *parser)
 {
     printf("[has_more_line] start\n");
     bool result = parser->current_line_no < (parser->line_total - 1);

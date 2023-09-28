@@ -3,16 +3,17 @@
 int initialize_writer(CodeWriter *writer, char *file_path)
 {
     printf("[writer_initialize] start\n");
+    int cc = strlen(file_path);
+    char file_name[cc + 1];
+    strncpy(file_name, file_path, (cc - 3));
+    writer->file_name = file_name;
+    strcat(file_name, ".asm");
     writer->output = NULL;
-    writer->output = fopen(file_path, "a");
+    writer->output = fopen(file_name, "a");
 
     writer->cond_i = 0;
 
     // set file name for static
-    int cc = strlen(file_path);
-    char file_name[cc - 3];
-    strncpy(file_name, file_path, (cc - 3));
-    writer->file_name = file_name;
 
     if (writer->output == NULL)
     {
@@ -334,5 +335,5 @@ void write_push_pop(
 
 void close(CodeWriter *writer)
 {
-    free_ram();
+    fclose(writer->output);
 }
