@@ -20,6 +20,7 @@ typedef struct
 {
     FILE *output;
     char *file_name;
+    int cond_i;
 } CodeWriter;
 
 // ---------------------------------------------------------------------
