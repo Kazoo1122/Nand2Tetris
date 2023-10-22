@@ -29,7 +29,7 @@ typedef struct
 // ---------------------------------------------------------------------
 // Prototype declaration
 // ---------------------------------------------------------------------
-void initialize_parser(Parser *parser, char *file_path);
+int initialize_parser(Parser *parser, char *file_path);
 
 // Checks if there is more work to do.
 bool has_more_lines(Parser *parser);
@@ -41,7 +41,7 @@ CommandType command_type(Parser *parser);
 
 void *arg1(char **dest, Parser *parser, CommandType type);
 
-void arg2(int **dest, Parser *parser, CommandType type);
+void arg2(int *dest, Parser *parser, CommandType type);
 
 static unsigned int parse_file_contents(
     FILE *fp,
