@@ -3,10 +3,10 @@
 int initialize_writer(CodeWriter *writer, char *file_path)
 {
     printf("[CodeWriter(%s): %d] INFO: start\n", __func__, __LINE__);
-    int cc = strlen(file_path) - 3;
+    int cc = strlen(file_path) - 2;
     char file_name[cc];
     strncpy(file_name, file_path, cc);
-    file_name[cc] = '\0';
+    file_name[cc - 1] = '\0';
 
     char asm_file[cc];
     strcpy(asm_file, file_name);
@@ -23,7 +23,8 @@ int initialize_writer(CodeWriter *writer, char *file_path)
     printf("[CodeWriter(%s): %d] INFO: file_name=%s\n", __func__, __LINE__, file_name);
 
     // set file name for static
-    writer->file_name = file_name;
+    writer->file_name = (char *) malloc(cc * sizeof(char *));
+    strcpy(writer->file_name, file_name);
 
     strcat(asm_file, ".asm");
     printf("[CodeWriter(%s): %d] INFO: asm_file=%s\n", __func__, __LINE__, asm_file);
@@ -79,78 +80,58 @@ void write_arithmetic(CodeWriter *writer, char *command)
             fprintf(writer->output, "M=M%cD\n", operator);
         }
 
-        else
+        else if (strcmp(command, "and") == 0)
         {
-            if (
-                strcmp(command, "eq") == 0
-                || strcmp(command, "gt") == 0
-                || strcmp(command, "lt") == 0
-            )
+            fprintf(writer->output, "M=D&M\n");
+        }
+
+        else if (strcmp(command, "or") == 0)
+        {
+            fprintf(writer->output, "M=D|M\n");
+        }
+
+        else if (
+            strcmp(command, "eq") == 0
+            || strcmp(command, "gt") == 0
+            || strcmp(command, "lt") == 0
+        )
+        {
+            fprintf(writer->output, "D=M-D\n");
+            fprintf(writer->output, "M=0\n");
+
+            if (strcmp(command, "eq") == 0)
             {
-                fprintf(writer->output, "D=D-M\n");
-                fprintf(writer->output, "M=0\n");
-
-                if (strcmp(command, "eq") == 0)
-                {
-                    fprintf(writer->output, "@END_EQ.%d\n", writer->cond_i);
-                    fprintf(writer->output, "D;JNE\n");
-                    fprintf(writer->output, "@SP\n");
-                    fprintf(writer->output, "A=M\n");
-                    fprintf(writer->output, "M=-1\n");
-                    fprintf(writer->output, "(END_EQ.%d)\n", writer->cond_i);
-
-                }
-                else if (strcmp(command, "gt") == 0)
-                {
-                    fprintf(writer->output, "@END_GT.%d\n", writer->cond_i);
-                    fprintf(writer->output, "D;JGT\n");
-                    fprintf(writer->output, "@SP\n");
-                    fprintf(writer->output, "A=M\n");
-                    fprintf(writer->output, "M=-1\n");
-                    fprintf(writer->output, "(END_GT.%d)\n", writer->cond_i);
-
-                }
-                else if (strcmp(command, "lt") == 0)
-                {
-                    fprintf(writer->output, "@END_LT.%d\n", writer->cond_i);
-                    fprintf(writer->output, "D;JLT\n");
-                    fprintf(writer->output, "@SP\n");
-                    fprintf(writer->output, "A=M\n");
-                    fprintf(writer->output, "M=-1\n");
-                    fprintf(writer->output, "(END_LT.%d)\n", writer->cond_i);
-
-                }
-
-            }
-            else if (strcmp(command, "and") == 0)
-            {
-                fprintf(writer->output, "D=D&M\n");
-                fprintf(writer->output, "D=D+1\n");
-                fprintf(writer->output, "M=0\n");
-                fprintf(writer->output, "@END_AND.%d\n", writer->cond_i);
+                fprintf(writer->output, "@END_EQ.%d\n", writer->cond_i);
                 fprintf(writer->output, "D;JNE\n");
                 fprintf(writer->output, "@SP\n");
                 fprintf(writer->output, "A=M\n");
                 fprintf(writer->output, "M=-1\n");
-                fprintf(writer->output, "(END_AND.%d)\n", writer->cond_i);
+                fprintf(writer->output, "(END_EQ.%d)\n", writer->cond_i);
 
             }
-
-            else if (strcmp(command, "or") == 0)
+            else if (strcmp(command, "gt") == 0)
             {
-                fprintf(writer->output, "D=D|M\n");
-                fprintf(writer->output, "D=D+1\n");
-                fprintf(writer->output, "M=0\n");
-                fprintf(writer->output, "@END_OR.%d\n", writer->cond_i);
-                fprintf(writer->output, "D;JNE\n");
+                fprintf(writer->output, "@END_GT.%d\n", writer->cond_i);
+                fprintf(writer->output, "D;JLE\n");
                 fprintf(writer->output, "@SP\n");
                 fprintf(writer->output, "A=M\n");
                 fprintf(writer->output, "M=-1\n");
-                fprintf(writer->output, "(END_OR.%d)\n", writer->cond_i);
+                fprintf(writer->output, "(END_GT.%d)\n", writer->cond_i);
+
+            }
+            else if (strcmp(command, "lt") == 0)
+            {
+                fprintf(writer->output, "@END_LT.%d\n", writer->cond_i);
+                fprintf(writer->output, "D;JGE\n");
+                fprintf(writer->output, "@SP\n");
+                fprintf(writer->output, "A=M\n");
+                fprintf(writer->output, "M=-1\n");
+                fprintf(writer->output, "(END_LT.%d)\n", writer->cond_i);
 
             }
 
         }
+
         writer->cond_i++;
 
     }
@@ -168,14 +149,9 @@ void write_push_pop(
 )
 {
     printf("[CodeWriter(%s): %d] INFO: start\n", __func__, __LINE__);
-    Symbol symbol;
+    Symbol symbol = NONE;
 
     printf("[CodeWriter(%s): %d] INFO: segment=%s\n", __func__, __LINE__, segment);
-    if (strcmp(segment, "constant") == 0)
-    {
-        symbol = CONSTANT;
-    }
-
     if (strcmp(segment, "local") == 0)
     {
         symbol = LCL;
@@ -201,11 +177,6 @@ void write_push_pop(
         symbol = THAT;
     }
 
-    else if (strcmp(segment, "pointer") == 0)
-    {
-        symbol = index == 0 ? THIS : THAT;
-    }
-
     else if (strcmp(segment, "temp") == 0)
     {
         symbol = TEMP;
@@ -213,12 +184,8 @@ void write_push_pop(
 
     printf("[CodeWriter(%s): %d] symbol=%d\n", __func__, __LINE__, symbol);
 
-    int *sp = NULL;
-    int *base = NULL;
-
     if (command == C_PUSH)
     {
-        int pushed_value = 0;
         unsigned int seg_addr = 0;
 
         switch (symbol)
@@ -249,33 +216,42 @@ void write_push_pop(
                 break;
 
             }
+
+            fprintf(writer->output, "D=M\n");
+            fprintf(writer->output, "@%d\n", index);
+            fprintf(writer->output, "D=D+A\n");
+            fprintf(writer->output, "A=D\n");
             fprintf(writer->output, "D=M\n");
             break;
 
         case STATIC:
         case TEMP:
-            switch (symbol)
+            if (symbol == STATIC)
             {
-                case STATIC:
-                    fprintf(writer->output, "@%s.%d\n", writer->file_name, index);
-                    break;
-
-                case TEMP:
-                    seg_addr = symbol + index;
-                    fprintf(writer->output, "@%d\n", seg_addr);
-                    break;
-
-                default:
-                    break;
+                fprintf(writer->output, "@%s.%d\n", writer->file_name, index);
+            }
+            else
+            {
+                seg_addr = symbol + index;
+                fprintf(writer->output, "@%d\n", seg_addr);
+                fprintf(writer->output, "A=A\n");
             }
 
             fprintf(writer->output, "D=M\n");
+            break;
 
-        // constant
         default:
-            fprintf(writer->output, "@%d\n", index);
-            fprintf(writer->output, "D=A\n");
-
+            if (strcmp(segment, "pointer") == 0)
+            {
+                fprintf(writer->output, "@%s\n", index == 0 ? "THIS" : "THAT");
+                fprintf(writer->output, "D=M\n");
+            }
+            // constant
+            else
+            {
+                fprintf(writer->output, "@%d\n", index);
+                fprintf(writer->output, "D=A\n");
+            }
         }
 
         fprintf(writer->output, "@SP\n");
@@ -319,42 +295,50 @@ void write_push_pop(
 
             }
 
+            // Store the sum of the base address and index in R13
             fprintf(writer->output, "D=M\n");
-            fprintf(writer->output, "D=D+%d\n", index);
+            fprintf(writer->output, "@%d\n", index);
+            fprintf(writer->output, "D=D+A\n");
+            fprintf(writer->output, "@R13\n");
+            fprintf(writer->output, "M=D\n");
+
+            // SP-- and insert popped value to address in R13
+            fprintf(writer->output, "@SP\n");
+            fprintf(writer->output, "AM=M-1\n");
+            fprintf(writer->output, "D=M\n");
+            fprintf(writer->output, "@R13\n");
+            fprintf(writer->output, "A=M\n");
+            fprintf(writer->output, "M=D\n");
 
             break;
 
         case STATIC:
         case TEMP:
-            switch (symbol)
+        default:
+            fprintf(writer->output, "@SP\n");
+            fprintf(writer->output, "AM=M-1\n");
+            fprintf(writer->output, "D=M\n");
+
+            if (symbol == STATIC)
             {
-                case STATIC:
-                    fprintf(writer->output, "@%s.%d\n", writer->file_name, index);
-                    break;
-
-                case TEMP:
-                    seg_addr = symbol + index;
-                    fprintf(writer->output, "@%d\n", seg_addr);
-                    break;
-
-                default:
-                    break;
+                fprintf(writer->output, "@%s.%d\n", writer->file_name, index);
+            }
+            else if (symbol == TEMP)
+            {
+                seg_addr = symbol + index;
+                fprintf(writer->output, "@%d\n", seg_addr);
+            }
+            // pointer
+            else
+            {
+                fprintf(writer->output, "@%d\n", index == 0 ? THIS : THAT);
+                fprintf(writer->output, "A=A\n");
             }
 
-            fprintf(writer->output, "D=A\n");
+            fprintf(writer->output, "M=D\n");
             break;
 
-        // constant
-        default:
-            printf("[CodeWriter(%s): %d] WARN: cannot use pop to constant.\n", __func__, __LINE__);
-            return;
         }
-
-        fprintf(writer->output, "@SP\n");
-        fprintf(writer->output, "M=M-1\n");
-
-        fprintf(writer->output, "A=M\n");
-        fprintf(writer->output, "M=D\n");
 
         printf("[CodeWriter(%s): %d] INFO: end\n", __func__, __LINE__);
     }
@@ -363,10 +347,11 @@ void write_push_pop(
 void close(CodeWriter *writer)
 {
     printf("[CodeWriter(%s): %d] INFO: start\n", __func__, __LINE__);
-    // fprintf(writer->output, "// Add infinite loop at the end.\n");
-    // fprintf(writer->output, "(INFINITE_LOOP)\n");
-    // fprintf(writer->output, "@INFINITE_LOOP\n");
-    // fprintf(writer->output, "0;JMP\n");
+    fprintf(writer->output, "// Add infinite loop at the end.\n");
+    fprintf(writer->output, "(INFINITE_LOOP)\n");
+    fprintf(writer->output, "@INFINITE_LOOP\n");
+    fprintf(writer->output, "0;JMP\n");
     fclose(writer->output);
+    free(writer->file_name);
     printf("[CodeWriter(%s): %d] INFO: end\n", __func__, __LINE__);
 }

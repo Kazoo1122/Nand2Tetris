@@ -266,7 +266,7 @@ void arg2(int *dest, Parser *parser, CommandType type)
         arg = strchr(++arg, ' ');
         printf("[Parser(%s): %d] INFO: arg=%s\n", __func__, __LINE__, arg);
 
-        int num = *++arg - '0';
+        int num = atoi(++arg);
         printf("[Parser(%s): %d] INFO: num=%d\n", __func__, __LINE__, num);
         *dest = num;
     }

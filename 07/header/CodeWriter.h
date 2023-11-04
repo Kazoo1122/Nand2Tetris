@@ -5,6 +5,7 @@
 // Included header
 // ---------------------------------------------------------------------
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "CommandType.h"
 
@@ -25,7 +26,7 @@ typedef struct
 
 typedef enum
 {
-    CONSTANT = -1
+    NONE = -1
     , SP
     , LCL
     , ARG
