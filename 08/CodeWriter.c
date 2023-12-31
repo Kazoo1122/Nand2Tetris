@@ -1,30 +1,11 @@
 #include "header/CodeWriter.h"
 
-int initialize_writer(CodeWriter *writer, char *file_path)
+int initialize_writer(CodeWriter *writer, const char *file_path)
 {
     printf("[CodeWriter(%s): %d] INFO: start\n", __func__, __LINE__);
-    int cc = strlen(file_path) - 2;
-    char file_name[cc];
-    strncpy(file_name, file_path, cc);
-    file_name[cc - 1] = '\0';
-
-    char asm_file[cc];
-    strcpy(asm_file, file_name);
-
-    char *ext = strrchr(file_path, '.');
-    char *slash = strrchr(file_path, '/');
-    if (slash != NULL)
-    {
-        int name_count = ext - ++slash;
-        printf("[CodeWriter(%s): %d] INFO: name_count=%d\n", __func__, __LINE__, name_count);
-        strncpy(file_name, slash, name_count);
-        file_name[name_count] = '\0';
-    }
-    printf("[CodeWriter(%s): %d] INFO: file_name=%s\n", __func__, __LINE__, file_name);
-
-    // set file name for static
-    writer->file_name = (char *) malloc(cc * sizeof(char *));
-    strcpy(writer->file_name, file_name);
+    int path_count = strlen(file_path);
+    char asm_file[path_count + 4];
+    strcpy(asm_file, file_path);
 
     strcat(asm_file, ".asm");
     printf("[CodeWriter(%s): %d] INFO: asm_file=%s\n", __func__, __LINE__, asm_file);
@@ -54,6 +35,10 @@ int initialize_writer(CodeWriter *writer, char *file_path)
 void set_file_name(CodeWriter *writer, char *file_name)
 {
     printf("[CodeWriter(%s): %d] INFO: start\n", __func__, __LINE__);
+
+    // set file name for static
+    strcpy(writer->file_name, file_name);
+
 }
 
 void write_arithmetic(CodeWriter *writer, char *command)

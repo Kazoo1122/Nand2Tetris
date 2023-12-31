@@ -1,6 +1,6 @@
 #include "header/Parser.h"
 
-int initialize_parser(Parser *parser, char *file_path)
+int initialize_parser(Parser *parser, const char *file_path)
 {
     printf("[Parser(%s): %d] INFO: start\n", __func__, __LINE__);
     printf("[Parser(%s): %d] INFO: file_path=%s\n", __func__, __LINE__, file_path);
@@ -273,7 +273,7 @@ void arg2(int *dest, Parser *parser, CommandType type)
     printf("[Parser(%s): %d] INFO: end\n", __func__, __LINE__);
 }
 
-void parser_finalize(Parser *parser)
+void finalize_parser(Parser *parser)
 {
     printf("[Parser(%s): %d] INFO: start\n", __func__, __LINE__);
     for (int i = 0; i < parser->line_total; i++)

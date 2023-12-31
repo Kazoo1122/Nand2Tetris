@@ -20,7 +20,7 @@
 typedef struct
 {
     FILE *output;
-    char *file_name;
+    char file_name[64];
     int cond_i;
 } CodeWriter;
 
@@ -43,7 +43,7 @@ typedef enum
 // ---------------------------------------------------------------------
 // Prototype declaration
 // ---------------------------------------------------------------------
-int initialize_writer(CodeWriter *writer, char *file_path);
+int initialize_writer(CodeWriter *writer, const char *file_path);
 void set_file_name(CodeWriter *writer, char *file_name);
 void write_arithmetic(CodeWriter *writer, char *command);
 void write_push_pop(CodeWriter *writer, CommandType command, char *segment, int index);

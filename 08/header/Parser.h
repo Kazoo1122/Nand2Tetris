@@ -29,7 +29,7 @@ typedef struct
 // ---------------------------------------------------------------------
 // Prototype declaration
 // ---------------------------------------------------------------------
-int initialize_parser(Parser *parser, char *file_path);
+int initialize_parser(Parser *parser, const char *file_path);
 
 // Checks if there is more work to do.
 bool has_more_lines(Parser *parser);
@@ -49,7 +49,7 @@ static unsigned int parse_file_contents(
     char *column_contents
 );
 
-void parser_finalize(Parser *parser);
+void finalize_parser(Parser *parser);
 
 #endif
 
